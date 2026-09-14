@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -40,7 +40,8 @@ public class Enemy : MonoBehaviour, IDamageable
         _currentHp = _maxHp;
         _isDead = false;
 
-        if (_meshRenderer != null) _meshRenderer.material = _originalMaterial;
+        if (_meshRenderer != null && _originalMaterial != null)
+            _meshRenderer.sharedMaterial = _originalMaterial;
     }
 
     private void Update()
@@ -49,6 +50,7 @@ public class Enemy : MonoBehaviour, IDamageable
 
         Vector3 targetPosition = new Vector3(_targetCar.position.x, transform.position.y, _targetCar.position.z);
         distanceToCar = Vector3.Distance(transform.position, targetPosition);
+
         if (distanceToCar > _agrodistance) return;
 
         if (distanceToCar > _attackDistance)
@@ -77,13 +79,14 @@ public class Enemy : MonoBehaviour, IDamageable
     {
         if (_meshRenderer == null || _hitMaterial == null) return;
 
-        _meshRenderer.material = _hitMaterial;
+        _meshRenderer.sharedMaterial = _hitMaterial;
 
-        await UniTask.Delay(TimeSpan.FromSeconds(0.08f), cancellationToken: this.GetCancellationTokenOnDestroy());
+        bool isCanceled = await UniTask.Delay(TimeSpan.FromSeconds(0.08f), cancellationToken: this.GetCancellationTokenOnDestroy())
+                                       .SuppressCancellationThrow();
 
-        if (!_isDead && _meshRenderer != null)
+        if (!isCanceled && !_isDead && _meshRenderer != null)
         {
-            _meshRenderer.material = _originalMaterial;
+            _meshRenderer.sharedMaterial = _originalMaterial;
         }
     }
 
@@ -95,25 +98,42 @@ public class Enemy : MonoBehaviour, IDamageable
         {
             vehicle.TakeDamage(_damage);
         }
+
         Die();
     }
 
     private void Die()
     {
+        Despawn();
+    }
+
+    public void Despawn()
+    {
         if (_isDead) return;
+
         _isDead = true;
         RunAnim(false);
+
+        if (_meshRenderer != null && _originalMaterial != null)
+        {
+            _meshRenderer.sharedMaterial = _originalMaterial;
+        }
+
         if (_pool != null)
         {
             _pool.Release(this);
         }
-        else {
+        else
+        {
             gameObject.SetActive(false);
-        } 
+        }
     }
 
     private void RunAnim(bool activate)
     {
-        animator.SetBool("isRun", activate);
+        if (animator != null)
+        {
+            animator.SetBool("isRun", activate);
+        }
     }
 }

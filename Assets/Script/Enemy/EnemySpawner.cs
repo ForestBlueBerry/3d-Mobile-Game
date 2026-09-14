@@ -64,14 +64,14 @@ public class EnemySpawner : MonoBehaviour
             _activeEnemies.Add(enemy);
         }
     }
-
     public void ClearActiveEnemies()
     {
         for (int i = _activeEnemies.Count - 1; i >= 0; i--)
         {
-            if (_activeEnemies[i] != null && _activeEnemies[i].gameObject.activeSelf)
+            Enemy enemy = _activeEnemies[i];
+            if (enemy != null && enemy.gameObject.activeSelf)
             {
-                _enemyPool.Release(_activeEnemies[i]);
+                enemy.Despawn();
             }
         }
         _activeEnemies.Clear();
