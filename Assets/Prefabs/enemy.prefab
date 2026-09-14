@@ -267,7 +267,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   _maxHp: 20
   _moveSpeed: 6
-  _damage: 15
+  _damage: 2
   _attackDistance: 2
   _agrodistance: 31
   _meshRenderer: {fileID: 2590465211707411279}
